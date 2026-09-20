@@ -1,0 +1,104 @@
+name: Build and publish cherrytouch
+
+# Declenchement MANUEL uniquement. publish=false (defaut) : build + artefact a
+# telecharger/inspecter, SANS toucher au depot Sileo servi. publish=true : publie
+# aussi (commit debs/cherrytouch.deb + Packages/Packages.gz/Release sur main).
+on:
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publier dans le depot Sileo (sinon build + artefact seulement)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-cherrytouch
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Install ldid + dpkg
+        run: brew install ldid dpkg
+
+      - name: Reference - contenu du .deb 1.0.3 actuel
+        run: |
+          set -e
+          if [ -f debs/cherrytouch.deb ]; then
+            echo "=== 1.0.3 contents ==="; dpkg-deb -c debs/cherrytouch.deb || true
+            echo "=== 1.0.3 control ==="; dpkg-deb -I debs/cherrytouch.deb control || true
+          fi
+
+      - name: Cross-compile dylib (arm64, iOS SDK)
+        working-directory: build
+        run: |
+          set -euxo pipefail
+          SDK="$(xcrun --sdk iphoneos --show-sdk-path)"
+          echo "iOS SDK: $SDK"
+          # Meme commande que le build on-device eprouve (deploy_tweak.py), en
+          # cross-compilation : la seule difference est -undefined dynamic_lookup,
+          # car le SDK public est fait de stubs .tbd sans les symboles PRIVES
+          # (CARenderServerRenderDisplay, _UICreateScreenUIImage, IOHIDEvent*, IOSurface
+          # privees...). Ils sont resolus a l'execution dans backboardd, comme sur
+          # l'appareil. arm64 seul : la flotte est iPhone X (A11), pas d'arm64e.
+          FW="-framework Foundation -framework UIKit -framework IOKit -framework VideoToolbox -framework CoreMedia -framework CoreVideo -framework ImageIO -framework CoreGraphics -framework IOSurface -framework QuartzCore"
+          xcrun --sdk iphoneos clang -dynamiclib -arch arm64 -fobjc-arc -Wno-deprecated-declarations \
+            -miphoneos-version-min=14.0 -isysroot "$SDK" \
+            $FW -Wl,-undefined,dynamic_lookup \
+            -o cherrytouch.dylib cherrytouch-tweak.m
+          ldid -S cherrytouch.dylib
+          echo "=== arch (attendu arm64) ==="; file cherrytouch.dylib; lipo -archs cherrytouch.dylib || true
+
+      - name: Assemble .deb (rootless, TweakInject)
+        working-directory: build
+        run: |
+          set -euxo pipefail
+          VER="$(sed -n 's/^Version: //p' control | tr -d '\r')"
+          echo "NEW_VERSION=$VER" >> "$GITHUB_ENV"
+          rm -rf pkg
+          mkdir -p pkg/DEBIAN pkg/var/jb/usr/lib/TweakInject
+          cp cherrytouch.dylib cherrytouch.plist pkg/var/jb/usr/lib/TweakInject/
+          # control en LF (un CRLF fausserait le parsing dpkg et donc les hash).
+          tr -d '\r' < control > pkg/DEBIAN/control
+          printf '#!/bin/sh\nsbreload || killall -9 SpringBoard || true\n' > pkg/DEBIAN/extrainst_
+          chmod 0755 pkg/DEBIAN/extrainst_
+          dpkg-deb -Zgzip -b pkg cherrytouch.deb
+          echo "=== nouveau .deb ==="; dpkg-deb -c cherrytouch.deb; dpkg-deb -I cherrytouch.deb control
+          # Garde-fous : sans dylib+plist au bon chemin, on N'ATTEINT PAS l'appareil.
+          dpkg-deb -c cherrytouch.deb | grep -q 'var/jb/usr/lib/TweakInject/cherrytouch\.dylib' \
+            || { echo '::error::dylib absent du chemin TweakInject'; exit 1; }
+          dpkg-deb -c cherrytouch.deb | grep -q 'var/jb/usr/lib/TweakInject/cherrytouch\.plist' \
+            || { echo '::error::filtre cherrytouch.plist absent'; exit 1; }
+          lipo -archs cherrytouch.dylib | grep -qw arm64 \
+            || { echo '::error::tranche arm64 absente'; exit 1; }
+
+      - name: Upload .deb (artefact)
+        uses: actions/upload-artifact@v4
+        with:
+          name: cherrytouch-deb
+          path: build/cherrytouch.deb
+          if-no-files-found: error
+
+      - name: Publish to Sileo repo (main)
+        if: ${{ inputs.publish }}
+        run: |
+          set -euxo pipefail
+          python3 build/mkrepo.py
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add debs/cherrytouch.deb Packages Packages.gz Release
+          if git diff --cached --quiet; then
+            echo "Aucun changement a publier."
+          else
+            git commit -m "Publish cherrytouch ${NEW_VERSION} [skip ci]"
+            git push
+          fi

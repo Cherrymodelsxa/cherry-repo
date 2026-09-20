@@ -1,0 +1,4 @@
+# Sorties de build (generees en CI ou en local, jamais versionnees)
+pkg/
+*.dylib
+cherrytouch.deb
