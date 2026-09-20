@@ -71,15 +71,22 @@ jobs:
           tr -d '\r' < control > pkg/DEBIAN/control
           printf '#!/bin/sh\nsbreload || killall -9 SpringBoard || true\n' > pkg/DEBIAN/extrainst_
           chmod 0755 pkg/DEBIAN/extrainst_
-          dpkg-deb -Zgzip -b pkg cherrytouch.deb
+          # --root-owner-group : fichiers root:root dans le .deb (comme le 1.0.3),
+          # pas l'owner du runner (501:20).
+          dpkg-deb --root-owner-group -Zgzip -b pkg cherrytouch.deb
           echo "=== nouveau .deb ==="; dpkg-deb -c cherrytouch.deb; dpkg-deb -I cherrytouch.deb control
           # Garde-fous : sans dylib+plist au bon chemin, on N'ATTEINT PAS l'appareil.
-          dpkg-deb -c cherrytouch.deb | grep -q 'var/jb/usr/lib/TweakInject/cherrytouch\.dylib' \
+          # On capture le listing AVANT de grepper : `dpkg-deb -c | grep -q` ferait
+          # fermer le tube par grep -> SIGPIPE sur dpkg-deb -> echec sous pipefail
+          # meme quand la ligne EST presente.
+          CONTENTS="$(dpkg-deb -c cherrytouch.deb)"
+          echo "$CONTENTS" | grep -q 'var/jb/usr/lib/TweakInject/cherrytouch\.dylib' \
             || { echo '::error::dylib absent du chemin TweakInject'; exit 1; }
-          dpkg-deb -c cherrytouch.deb | grep -q 'var/jb/usr/lib/TweakInject/cherrytouch\.plist' \
+          echo "$CONTENTS" | grep -q 'var/jb/usr/lib/TweakInject/cherrytouch\.plist' \
             || { echo '::error::filtre cherrytouch.plist absent'; exit 1; }
-          lipo -archs cherrytouch.dylib | grep -qw arm64 \
-            || { echo '::error::tranche arm64 absente'; exit 1; }
+          ARCHS="$(lipo -archs cherrytouch.dylib || true)"
+          echo "archs: $ARCHS"
+          echo "$ARCHS" | grep -qw arm64 || { echo '::error::tranche arm64 absente'; exit 1; }
 
       - name: Upload .deb (artefact)
         uses: actions/upload-artifact@v4
