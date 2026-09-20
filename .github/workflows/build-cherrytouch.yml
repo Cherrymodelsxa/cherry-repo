@@ -67,6 +67,11 @@ jobs:
           rm -rf pkg
           mkdir -p pkg/DEBIAN pkg/var/jb/usr/lib/TweakInject
           cp cherrytouch.dylib cherrytouch.plist pkg/var/jb/usr/lib/TweakInject/
+          # ElleKit lit le filtre : le 1.0.3 (qui marche) embarque un plist BINAIRE
+          # (bplist), pas du XML. Le XML (avec DOCTYPE + commentaire) n'etait pas
+          # injecte -> tweak jamais charge. On convertit donc en binaire, comme 1.0.3.
+          plutil -convert binary1 pkg/var/jb/usr/lib/TweakInject/cherrytouch.plist
+          echo "=== filtre plist (doit etre bplist00) ==="; head -c 8 pkg/var/jb/usr/lib/TweakInject/cherrytouch.plist | xxd
           # control en LF (un CRLF fausserait le parsing dpkg et donc les hash).
           tr -d '\r' < control > pkg/DEBIAN/control
           printf '#!/bin/sh\nsbreload || killall -9 SpringBoard || true\n' > pkg/DEBIAN/extrainst_
