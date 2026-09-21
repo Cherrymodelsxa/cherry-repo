@@ -1,5 +1,35 @@
 Package: com.cherry.cherrytouch
 Name: cherrytouch
+Version: 1.0.7
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.7.deb
+Size: 19792
+MD5sum: 17223a268ea76941d8f51f1e0ca27ace
+SHA1: fb5df0d32db9208428893bf0608a8d0409b529c3
+SHA256: 267a1236f90ebd02c17e6e254647edeab0db871b949dd2c08e3d14feb4db78eb
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
+Version: 1.0.6
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.6.deb
+Size: 19792
+MD5sum: e272e33de852a11cdbc0b824b7db92dc
+SHA1: c3f0a4d5fbc413fdda37315f95c377373598e9c0
+SHA256: 5d140b2809a4a419e4d041984dd86c43605588c32bfd6980bbbf9e8bf741d177
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
 Version: 1.0.5
 Architecture: iphoneos-arm64
 Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
@@ -7,8 +37,54 @@ Author: Cherry
 Maintainer: Cherry
 Section: Tweaks
 Depends: ellekit
-Filename: ./debs/cherrytouch.deb
-Size: 19808
-MD5sum: 433f4beb9c1374c2538a35c8b7a9905c
-SHA1: 2f9ae22c91807287a508c3ad6b7f8f29a9b7ac74
-SHA256: bb360a9f000219257801a5aca0a09a58e2ca8a1ddcc2188afdec571514c98587
+Filename: ./debs/cherrytouch-1.0.5.deb
+Size: 19792
+MD5sum: b794db3a648e1379398a3cb41bfbb826
+SHA1: 06087cb9c51bd831ae22d814a6f43eca66b155c1
+SHA256: c31b03cc340f9d44019d27aace2b723f66bf9d788d170847f45d0fc672660ed5
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
+Version: 1.0.4
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.4.deb
+Size: 19792
+MD5sum: 347d58838f7e84b93ab3789a4c84af1f
+SHA1: d234acda2e68af01163632ff1360e11cf630ed33
+SHA256: e0bf2e66bee70491e26d6c0606a313210cac97dc3d98b225792f167f84bce07c
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
+Version: 1.0.3
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.3.deb
+Size: 19792
+MD5sum: 3dabe2e491b0ab720ef55080e289426a
+SHA1: 01d1f3bc9d0cc805ac1fb2067da0b7f581b0c32a
+SHA256: 57b0d1872917a91259b2ec2110d55d83f61a9e111e20d61583aeda87d8cc8521
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
+Version: 1.0.2
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.2.deb
+Size: 19792
+MD5sum: 7bd94e15495d15459e576d1c22f784fb
+SHA1: eb3afe915d3b9164c37d12afd4b88163f1930cd9
+SHA256: 587b206e1a1ebf435ef5d98abfe4ed30923048c9a06d3b3bf87c46019c768e09
+
