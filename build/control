@@ -1,8 +1,8 @@
 Package: com.cherry.cherrytouch
 Name: cherrytouch
-Version: 1.0.6
+Version: 1.0.8
 Architecture: iphoneos-arm64
-Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app, reveil ecran UNIVERSEL et lecture presse-papier a la demande (port 8794)
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app, reveil ecran UNIVERSEL, capture ecran + lecture presse-papier + fermeture d'app renvoyees par le socket 8794 (fin du SSH pour l'OCR)
 Author: Cherry
 Maintainer: Cherry
 Section: Tweaks

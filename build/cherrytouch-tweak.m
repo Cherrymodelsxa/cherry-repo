@@ -380,6 +380,19 @@ static void read_pasteboard(NSString *path) {
     [d writeToFile:path atomically:YES];
 }
 
+// Comme read_pasteboard(), mais RENVOIE le contenu (UTF-8) au lieu de l'ecrire
+// dans un fichier : l'agent le lit directement sur la connexion 8794 (commande
+// "readpbsock"), plus aucun SSH. Jamais nil (NSData vide si presse-papier vide),
+// pour que l'agent ne bloque pas.
+static NSData *pasteboard_data(void) {
+    __block NSString *s = nil;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        @try { s = [UIPasteboard generalPasteboard].string; }
+        @catch (__unused NSException *e) { s = nil; }
+    });
+    return [(s ?: @"") dataUsingEncoding:NSUTF8StringEncoding];
+}
+
 // Vrai seulement quand l'ecran systeme est configure. Juste apres un respring,
 // pendant que SpringBoard demarre, +[UIScreen mainScreen] LEVE une exception
 // (assertion "UIScreen ... before ..."). Si un client demande un flux ou une
@@ -424,11 +437,34 @@ static void screenshot(NSString *path) {
     if (!path) path = @"/var/jb/tmp/cherry-shot.png";
     __block UIImage *img = nil;
     dispatch_sync(dispatch_get_main_queue(), ^{
-        img = _UICreateScreenUIImage();
+        // @try dans le bloc : meme course que screenshot_png/capture_jpeg, une
+        // exception de _UICreateScreenUIImage sur le main thread tuerait backboardd.
+        @try { img = _UICreateScreenUIImage(); }
+        @catch (__unused NSException *e) { img = nil; }
     });
     if (!img) return;
     NSData *png = UIImagePNGRepresentation(img);
     [png writeToFile:path atomically:YES];
+}
+
+// Comme screenshot(), mais RENVOIE le PNG plein ecran (nil si capture impossible)
+// au lieu de l'ecrire sur disque : l'agent le lit sur la connexion 8794 (commande
+// "shotsock"), plus aucun SSH. Meme garde screen_ready() que screenshot() pour ne
+// pas tuer SpringBoard pendant son demarrage.
+static NSData *screenshot_png(void) {
+    if (!screen_ready()) return nil;
+    __block UIImage *img = nil;
+    dispatch_sync(dispatch_get_main_queue(), ^{
+        // @try DANS le bloc (execute sur la file main de backboardd) :
+        // _UICreateScreenUIImage peut lever une exception si l'ecran bascule juste
+        // apres screen_ready() (course documentee dans screen_dims). Non attrapee
+        // ici, elle remonterait sur le main thread et tuerait backboardd (respring).
+        // Meme durcissement que capture_jpeg().
+        @try { img = _UICreateScreenUIImage(); }
+        @catch (__unused NSException *e) { img = nil; }
+    });
+    if (!img) return nil;
+    return UIImagePNGRepresentation(img);
 }
 
 static double num(NSDictionary *d, NSString *k) {
@@ -456,6 +492,20 @@ static void launch_app(NSString *bundle, NSString *scheme) {
     if ([scheme isKindOfClass:[NSString class]] && scheme.length) {
         spawn_tool("/var/jb/usr/bin/uiopen", scheme.UTF8String);
     }
+}
+
+// Ferme une app par nom de process (killall), SANS SSH (commande "kill"). Deux
+// passes, SIGTERM puis SIGKILL, comme l'ancienne voie SSH. posix_spawn ne bloque
+// pas backboardd ; l'automatisation appelante laisse ensuite un delai (~2 s) avant
+// de relancer l'app, le temps que le killall s'applique.
+static void kill_proc(NSString *name) {
+    if (![name isKindOfClass:[NSString class]] || !name.length) return;
+    const char *n = name.UTF8String;
+    const char *killall = "/var/jb/usr/bin/killall";
+    char *a1[] = { (char *)killall, (char *)n, NULL };
+    pid_t p1 = 0; posix_spawn(&p1, killall, NULL, NULL, a1, environ);
+    char *a2[] = { (char *)killall, (char *)"-9", (char *)n, NULL };
+    pid_t p2 = 0; posix_spawn(&p2, killall, NULL, NULL, a2, environ);
 }
 
 static void handle_command(NSDictionary *cmd) {
@@ -946,6 +996,33 @@ static void serve_client(int fd) {
                             "{\"n\":%d,\"render_ms\":%.1f,\"total_ms\":%.1f}\n",
                             okc, okc ? render / okc * 1000 : 0, okc ? (render + encode) / okc * 1000 : 0);
                         write(fd, line, m);
+                        continue;
+                    }
+                    if ([t isEqualToString:@"shotsock"]) {
+                        // Capture PNG renvoyee SUR LA CONNEXION (plus de SSH) :
+                        // [longueur 4 octets big-endian][octets PNG]. Longueur 0 =
+                        // capture impossible (l'agent le traite comme un echec).
+                        NSData *png = screenshot_png();
+                        uint32_t nn = (uint32_t)(png ? png.length : 0);
+                        uint8_t hdr[4] = { (uint8_t)(nn >> 24), (uint8_t)(nn >> 16), (uint8_t)(nn >> 8), (uint8_t)nn };
+                        send_all(fd, hdr, 4);
+                        if (nn) send_all(fd, png.bytes, png.length);
+                        continue;
+                    }
+                    if ([t isEqualToString:@"readpbsock"]) {
+                        // Presse-papier renvoye SUR LA CONNEXION (plus de SSH),
+                        // meme cadrage : [longueur 4 octets][UTF-8]. Longueur 0 = vide.
+                        NSData *pb = pasteboard_data();
+                        uint32_t nn = (uint32_t)pb.length;
+                        uint8_t hdr[4] = { (uint8_t)(nn >> 24), (uint8_t)(nn >> 16), (uint8_t)(nn >> 8), (uint8_t)nn };
+                        send_all(fd, hdr, 4);
+                        if (nn) send_all(fd, pb.bytes, pb.length);
+                        continue;
+                    }
+                    if ([t isEqualToString:@"kill"]) {
+                        // Ferme une app par nom de process, sans SSH.
+                        id nm = obj[@"name"];
+                        if ([nm isKindOfClass:[NSString class]]) kill_proc(nm);
                         continue;
                     }
                     handle_command(obj);
