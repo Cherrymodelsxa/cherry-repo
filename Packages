@@ -1,5 +1,35 @@
 Package: com.cherry.cherrytouch
 Name: cherrytouch
+Version: 1.0.9
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, OCR/presse-papier socket (port 8794). 1.0.9: fix fuite IOSurface (_UICreateScreenUIImage).
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.9.deb
+Size: 21148
+MD5sum: fe88de6a5385871d09e223fa8673fc90
+SHA1: 94f5d7f3a5ce21df53179742bb956048fd35157f
+SHA256: 4e86f57ad5f43374ffd78dea17439c17e52cd8374b7faa03ae3114bf27344bed
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
+Version: 1.0.8
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app, reveil ecran UNIVERSEL, capture ecran + lecture presse-papier + fermeture d'app renvoyees par le socket 8794 (fin du SSH pour l'OCR)
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch-1.0.8.deb
+Size: 21200
+MD5sum: 58981440deac695bfb936808e2ee3ebc
+SHA1: 579c965cd610127730cd69faa9d3b7c97bbab7ad
+SHA256: 8cefe565551f5dafb2cf008b7e69e60886d8416de182cb5dc93f81f7a1d1f02c
+
+Package: com.cherry.cherrytouch
+Name: cherrytouch
 Version: 1.0.7
 Architecture: iphoneos-arm64
 Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app et reveil ecran UNIVERSEL a la demande (bouton lateral, tout iOS) (port 8794)
