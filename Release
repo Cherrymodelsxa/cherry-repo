@@ -1,0 +1,14 @@
+Origin: Cherry
+Label: Cherry Repo
+Suite: stable
+Version: 1.0
+Codename: cherry
+Architectures: iphoneos-arm64
+Components: main
+Description: Depot Cherry - tweak cherrytouch pour le pilotage a distance
+MD5Sum:
+ 80e47cdcd58aa2a491d21a3dc208166b 534 Packages
+ bfac3575346f04e3d120e6e913cdaa68 394 Packages.gz
+SHA256:
+ 42713b2e321f7ae7b44547b8bc47295447e56000aa64643a21fec1d27e1554ee 534 Packages
+ d1c10dfe427f4dc1ef94889fabd22dd8d32c65df71dc9fde61295bbe3b1c814c 394 Packages.gz
