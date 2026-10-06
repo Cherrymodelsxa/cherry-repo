@@ -1,0 +1,14 @@
+Package: com.cherry.cherrytouch
+Name: cherrytouch
+Version: 1.2.0
+Architecture: iphoneos-arm64
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app, reveil ecran et multitache (App Switcher) a la demande (port 8794). 1.2.0: flux H.264 recree par session + auto-reparation si l'encodeur meurt (fin des flux figes) + diagnostic h264diag.
+Author: Cherry
+Maintainer: Cherry
+Section: Tweaks
+Depends: ellekit
+Filename: ./debs/cherrytouch.deb
+Size: 22664
+MD5sum: b8d8b09fdd591101b493652bd7460930
+SHA1: e032e74cf15a0a573f3347b793495d38a1378ac0
+SHA256: f55aaa31ee3493e0f362db3cd9097d2e4f2cbc7237460c22173740135a829301
