@@ -1,0 +1,16 @@
+Package: com.cherry.cherrytouch
+Version: 1.2.4
+Architecture: iphoneos-arm64
+Maintainer: Cherry
+Installed-Size: 212
+Depends: ellekit
+Filename: ./debs/cherrytouch.deb
+Size: 22144
+MD5sum: e26bae669d308ea85ac424adc14c087a
+SHA1: 062a39962edab516c571d646501459b43b8db023
+SHA256: 815c4a72fb9214d79b074f5371dc4db3c915d067cbde079f0b9ac5f49656ba0c
+Section: Tweaks
+Description: Cherry - injection tactile, capture ecran, streaming H.264, lancement d'app, reveil ecran et multitache (App Switcher) a la demande (port 8794). 1.2.4: bouton Accueil corrige et valide sur iPhone X iOS 16.7 (SpringBoard -_returnToHomeScreenWithCompletion:, avec replis multi-versions). Build propre : log par appui retire, commande homedump conservee pour diagnostic a la demande.
+Author: Cherry
+Name: cherrytouch
+
